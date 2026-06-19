@@ -11,7 +11,7 @@ const error = ref('');
 const login = async() => {
     error.value = '';
     try {
-        const response = await api.post('/auth/login',
+        const response = await api.post('/users/login',
             { 
                 email: email.value,
                 password: password.value
@@ -21,7 +21,7 @@ const login = async() => {
         localStorage.setItem('user', JSON.stringify(response.data.user));
         router.push('/');
     } catch (err) {
-        error.value = 'err.response?.data?.message' || 'Greška pri prijavi';
+        error.value = err.response?.data?.message || 'Greška pri prijavi';
     }
 }
 </script>
