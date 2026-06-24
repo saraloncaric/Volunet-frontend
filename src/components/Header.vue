@@ -44,25 +44,24 @@ router.afterEach(() => {
 <template>
     <nav class="fixed top-0 left-0 right-0 z-50 bg-blue-950 text-white px-6 py-5 flex justify-between items-center">
       <RouterLink to="/" class="text-xl font-bold text-white">VoluNet</RouterLink>
-      <div class="flex gap-4 items-center">
-        <template v-if="!logiranUser">
+      <div class="flex items-center">
+        <div v-if="!logiranUser" class="flex items-center gap-4">
           <RouterLink to="/login" class="hover:text-gray-300">Login</RouterLink>
-        </template>
-
-        <template v-else-if="user?.role === 'volonter'">
+        </div>
+        <div v-else-if="user?.role === 'volonter'" class="flex items-center gap-4">
           <RouterLink to="/moj-profil" class="hover:text-gray-300">Profil</RouterLink>
           <button @click="logout" class="hover:text-gray-300">Logout</button>
-        </template>
+        </div>
 
-        <template v-else-if="user?.role === 'udruga'">
+        <div v-else-if="user?.role === 'udruga'" class="flex items-center gap-4">
           <RouterLink to="/moj-profil" class="hover:text-gray-300">Profil</RouterLink>
           <button @click="logout" class="hover:text-gray-300">Logout</button>
-        </template>
+        </div>
 
-        <template v-else-if="user?.role === 'admin'">
+        <div v-else-if="user?.role === 'admin'" class="flex items-center gap-4">
           <RouterLink to="/admin" class="hover:text-gray-300">Admin</RouterLink>
           <button @click="logout" class="hover:text-gray-300">Logout</button>
-        </template>
+        </div>
       </div>
   </nav>
 </template>
