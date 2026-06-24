@@ -1,5 +1,5 @@
 <script setup>
-import api from '@/api/axios';
+import api from '@/api/axios.js';
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
 
