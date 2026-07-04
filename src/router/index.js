@@ -2,7 +2,6 @@ import AdminPanel from "@/views/AdminPanel.vue";
 import DetaljiZadatka from "@/views/DetaljiZadatka.vue";
 import Home from "@/views/Home.vue";
 import Login from "@/views/Login.vue";
-import MojProfil from "@/views/MojProfil.vue";
 import ProfilUdruge from "@/views/ProfilUdruge.vue";
 import ProfilVolontera from "@/views/ProfilVolontera.vue";
 import Register from "@/views/Register.vue";
@@ -37,11 +36,6 @@ const router = createRouter({
             component: ProfilUdruge
         },
         {
-            path: '/moj-profil',
-            name: 'mojProfil',
-            component: MojProfil
-        },
-        {
             path: '/zadatak/:id',
             name: 'detaljiZadatka',
             component: DetaljiZadatka
@@ -50,7 +44,7 @@ const router = createRouter({
             path: '/admin',
             name: 'adminPanel',
             component: AdminPanel
-        }
+        },
     ]
 })
 export default router;
