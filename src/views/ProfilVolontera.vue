@@ -1,6 +1,6 @@
 <script setup>
 import api from '@/api/axios.js';
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, h } from 'vue';
 import { useRoute } from 'vue-router';
 
 const route = useRoute();
@@ -83,6 +83,17 @@ const spremiProfil = async() => {
                     </div>
                     <h5 class="text-lg font-bold text-blue-950 mt-3">{{ profil.name }} {{ profil.surname }}</h5>
                     <span class="text-xs font-semibold px-3 py-1 rounded-full bg-amber-100 text-amber-700 mt-2">{{ profil.badge_level }}</span>
+                    <div class="w-full border-t border-gray-100 pt-4 flex flex-col gap-2 text-sm space-y-1">
+                        <hr class="border-gray-300">
+                        <p v-if="profil.location" class="italic"><span class="font-medium">Lokacija:</span> {{ profil.location }}</p>
+                        <p v-if="profil.phone" class="italic"><span class="font-medium">Phone:</span> {{ profil.phone }}</p>
+                        <hr class="border-gray-300">
+                    </div>
+                    <p v-if="profil.bio" class="mt-4 text-sm w-full">{{ profil.bio }}</p>  
+                    <button v-if="jeVlastiti" @click="uredi = !uredi"
+                        class="mt-5 w-full bg-blue-950 text-white py-2 rounded-xl text-sm hover:bg-blue-900 transition">
+                        {{ uredi ? 'Odustani' : 'Uredi profil' }}
+                    </button>                  
                 </div>
             </div>
             <div class="flex-1"></div>
