@@ -77,7 +77,7 @@ const spremiProfil = async() => {
     <div class="min-h-screen bg-gray-50 px-8 py-10">
         <div v-if="profil" class="max-w-6xl mx-auto flex gap-6">
             <div class="w-64 shrink-0">
-                <div class="bg-white rounded-2xl shadow p-6 flex flex-col items-center text-center">
+                <div class="bg-white rounded-3xl shadow p-6 flex flex-col items-center text-center">
                     <div class="w-45 h-45">
                         <img v-if="profil.profile_image" :src="profil.profile_image" class="w-full h-full object-cover rounded-full" />
                     </div>
@@ -91,7 +91,7 @@ const spremiProfil = async() => {
                     </div>
                     <p v-if="profil.bio" class="mt-4 text-sm w-full">{{ profil.bio }}</p>  
                     <button v-if="jeVlastiti" @click="uredi = !uredi"
-                        class="mt-5 w-full bg-blue-950 text-white py-2 rounded-xl text-sm hover:bg-blue-900 transition">
+                        class="mt-5 w-full bg-blue-950 text-white py-2 rounded-3xl text-sm hover:bg-blue-900 transition">
                         {{ uredi ? 'Odustani' : 'Uredi profil' }}
                     </button>                  
                 </div>
@@ -109,7 +109,7 @@ const spremiProfil = async() => {
                         </div>
                         <p class="text-xs font-semibold px-3 py-1 rounded-full"
                             :class="zadatak.category_name ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-500'">
-                        {{ zadatak.category_name || 'Ostalo' }}
+                        {{ zadatak.name || 'Ostalo' }}
                         </p>
                     </div>
                 </div>
@@ -119,19 +119,37 @@ const spremiProfil = async() => {
                         Još nema ocjena ni komentara
                     </div>
                     <div class="flex flex-col gap-3">
-                        <div v-for="recenzija in recenzije" :key="recenzija.id" class="border border-gray-200 rounded-xl p-4 flex justify-between items-center space-y-3">
-                            <div class="flex justify-between items-start mb-2">
-                                <p class="font-semibold text-blue-950 text-sm">{{ recenzija.organization_name }}</p>
+                        <div v-for="recenzija in recenzije" :key="recenzija.id" class="border border-gray-200 rounded-xl p-4 flex flex-col gap-2">
+                            <div class="flex justify-between items-center">
+                                <p class="font-semibold text-blue-950 text-base">{{ recenzija.organization_name }}</p>
                                 <div class="flex gap-1">
                                     <span v-for="i in 5" :key="i" class="text-sm" :class="i <= recenzija.rating ? 'text-amber-400' : 'text-gray-200'">★</span>
                                 </div>
                             </div>
-                            <p class="text-xs" text-gray-500>{{ recenzija.comment }}</p>
+                            <p class="text-sm">{{ recenzija.task_title }}</p>
+                            <p class="text-xs text-gray-500 italic">"{{ recenzija.comment }}"</p>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="w-48 shrink-0">
+                <div class="bg-white p-5 rounded-3xl shadow-md w-full max-w-sm">
+                    <h3 class="text-xl font-semibold mb-6 text-center text-blue-950">Razina volontera</h3>
+                    <div class="bg-gray-100 rounded-3xl p-4 text-center mb-4">
+                        <p class="text-3xl font-bold">{{ povijest.length }}</p>
+                        <p class="text-sm text-gray-600">zadataka završeno</p>
+                    </div>
+                    <div class="bg-gray-100 rounded-3xl p-4 text-center mb-4">
+                        <p class="text-3xl font-bold">{{ profil.total_hours }}</p>
+                        <p class="text-sm text-gray-600">sati volontiranja</p>
+                    </div>
+                    <div v-if="recenzije.length > 0" class="bg-gray-100 rounded-3xl p-4 text-center">
+                        <p class="text-3xl font-bold">
+                            {{ (recenzije.reduce((sum, r) => sum + r.rating, 0) / recenzije.length).toFixed(1) }}
+                        </p>
+                        <p class="text-sm text-gray-600">prosječna ocjena</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
