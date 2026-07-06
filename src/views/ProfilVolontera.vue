@@ -96,8 +96,43 @@ const spremiProfil = async() => {
                     </button>                  
                 </div>
             </div>
-            <div class="flex-1"></div>
-            <div class="w-48 shrink-0"></div>
+            <div class="flex-1 space-y-3">
+                <h2 class="font-semibold text-xl text-blue-950">Povijest volontiranja</h2>
+                <div v-if="povijest.length === 0" class="text-gray-400 text-sm">
+                    Još nema završenih zadataka
+                </div>
+                <div class="flex flex-col gap-3">
+                    <div v-for="zadatak in povijest" :key="zadatak.id" class="border border-gray-200 rounded-xl p-4 flex justify-between items-center space-y-3">
+                        <div>
+                            <p class="font-semibold text-blue-950 text-base">{{ zadatak.title }}</p>
+                            <p class="text-xs text-gray-500 mt-1">{{ new Date(zadatak.start_date).toLocaleDateString('hr-HR') }}, {{ zadatak.location }}</p>
+                        </div>
+                        <p class="text-xs font-semibold px-3 py-1 rounded-full"
+                            :class="zadatak.category_name ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-500'">
+                        {{ zadatak.category_name || 'Ostalo' }}
+                        </p>
+                    </div>
+                </div>
+                <div>
+                    <h2 class="font-semibold text-xl text-blue-950">Ocjene i komentari</h2>
+                    <div v-if="recenzije.length === 0" class="text-sm text-gray-400">
+                        Još nema ocjena ni komentara
+                    </div>
+                    <div class="flex flex-col gap-3">
+                        <div v-for="recenzija in recenzije" :key="recenzija.id" class="border border-gray-200 rounded-xl p-4 flex justify-between items-center space-y-3">
+                            <div class="flex justify-between items-start mb-2">
+                                <p class="font-semibold text-blue-950 text-sm">{{ recenzija.organization_name }}</p>
+                                <div class="flex gap-1">
+                                    <span v-for="i in 5" :key="i" class="text-sm" :class="i <= recenzija.rating ? 'text-amber-400' : 'text-gray-200'">★</span>
+                                </div>
+                            </div>
+                            <p class="text-xs" text-gray-500>{{ recenzija.comment }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="w-48 shrink-0">
+            </div>
         </div>
     </div>
 </template>
