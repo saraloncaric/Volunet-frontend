@@ -91,12 +91,46 @@ const spremiProfil = async() => {
                     </div>
                     <p v-if="profil.bio" class="mt-4 text-sm w-full">{{ profil.bio }}</p>  
                     <button v-if="jeVlastiti" @click="uredi = !uredi"
-                        class="mt-5 w-full bg-blue-950 text-white py-2 rounded-3xl text-sm hover:bg-blue-900 transition">
+                        class="mt-5 w-50 bg-blue-950 text-white py-2 rounded-3xl text-sm hover:bg-blue-900 transition">
                         {{ uredi ? 'Odustani' : 'Uredi profil' }}
                     </button>                  
                 </div>
             </div>
             <div class="flex-1 space-y-3">
+                <div v-if="uredi && jeVlastiti" class="bg-white roundedn-3xl p-4">
+                    <h3 class="font-semibold text-lg text-blue-950">Uredi profil</h3>
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Ime</label>
+                            <input v-model="forma.name" type="text" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-950"/>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Prezime</label>
+                            <input v-model="forma.surname" type="text" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-950"/>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Lokacija</label>
+                            <input v-model="forma.location" type="text" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-950"/>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Broj telefona</label>
+                            <input v-model="forma.phone" type="text" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-950"/>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">O meni</label>
+                            <textarea v-model="forma.bio" rows="3" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-950"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">URL slike profila</label>
+                            <input v-model="forma.profile_image" type="text" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-950" />
+                        </div>
+                    </div>
+                    <div class="flex justify-end">
+                        <button @click="spremiProfil" class="w-45 bg-blue-950 text-white py-2 rounded-3xl font-semibold hover:bg-blue-900 transition">
+                            Spremi promjene
+                        </button>
+                    </div>
+                </div>
                 <h2 class="font-semibold text-xl text-blue-950">Povijest volontiranja</h2>
                 <div v-if="povijest.length === 0" class="text-gray-400 text-sm">
                     Još nema završenih zadataka
@@ -134,7 +168,17 @@ const spremiProfil = async() => {
             </div>
             <div class="w-48 shrink-0">
                 <div class="bg-white p-5 rounded-3xl shadow-md w-full max-w-sm">
-                    <h3 class="text-xl font-semibold mb-6 text-center text-blue-950">Razina volontera</h3>
+                    <h3 class="text-xl font-semibold text-blue-950">Razina volontera</h3>
+                    <div class="text-center mb-4">
+                        <button @click="razina = !razina" class="underline text-xs hover:font-bold">Kako funkcionira?</button>
+                    </div>
+                    <div v-if="razina" class="border border-blue-100 rounded-2xl p-3 mb-4 text-xs text-center space-y-0.5 text-gray-600">
+                        <p class="text-blue-950">Razine volontiranja se određuju prema broju sati volontiranja.</p>
+                        <p><strong>Beginner</strong> - <10h </p>
+                        <p><strong>Helper</strong> - <50h </p>
+                        <p><strong>Hero</strong> - <200h </p>
+                        <p><strong>Legend</strong> - 200h+</p>
+                    </div>
                     <div class="bg-gray-100 rounded-3xl p-4 text-center mb-4">
                         <p class="text-3xl font-bold">{{ povijest.length }}</p>
                         <p class="text-sm text-gray-600">zadataka završeno</p>

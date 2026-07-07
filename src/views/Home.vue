@@ -288,7 +288,7 @@ const otvoriProfil = (id) => {
             <span class="border border-amber-300 bg-amber-50 rounded-xl px-2.5 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">{{ zadatak.organization_name }}</span>
             <button @click="otvoriBox(zadatak.id)" class="bg-blue-950 text-white text-sm px-5 py-2 rounded-xl hover:bg-blue-900 transition">
               Detalji
-          </button>
+            </button>
           </div>
         </div>
       </div>
