@@ -11,9 +11,12 @@ const error = ref('');
 const uspjeh = ref('');
 const razina = ref(false);
 const uredi = ref(false);
+const recenzijaUspjeh = ref('')
+const recenzijaError = ref('')
 
 const trenutniUser = JSON.parse(localStorage.getItem('user') || '{}');
 const jeVlastiti = computed(() => profil.value?.user_id === trenutniUser.id);
+const jeUdruga = computed(() => trenutniUser.role === 'udruga')
 
 const forma = ref({
     name: '',
@@ -23,6 +26,11 @@ const forma = ref({
     phone: '',
     profile_image: ''
 });
+const recenzijaForma = ref({
+    rating: '',
+    task_id: '',
+    comment: ''
+})
 
 onMounted(async() => {
     await dohvatiProfil();
@@ -70,6 +78,18 @@ const spremiProfil = async() => {
         await dohvatiProfil();
     } catch (err) {
         error.value = err.response?.data?.message || 'Greška pri ažuriranju profila';
+    }
+}
+const dodajRecenziju = async() => {
+    recenzijaUspjeh.value = ''
+    recenzijaError.value = ''
+    try {
+        await api.post(`/recenzije/nova/${profil.value.id}`, recenzijaForma.value)
+        recenzijaUspjeh.value = 'Recenzija uspješno dodana!'
+        recenzijaForma.value = { rating: '', task_id: '', comment: '' }
+        await dohvatiRecenzije()
+    } catch (err) {
+        recenzijaError.value = err.response?.data?.message || 'Greška pri dodavanju recenzije'
     }
 }
 </script>
@@ -163,6 +183,30 @@ const spremiProfil = async() => {
                             <p class="text-sm">{{ recenzija.task_title }}</p>
                             <p class="text-xs text-gray-500 italic">"{{ recenzija.comment }}"</p>
                         </div>
+                    </div>
+                    <div v-if="jeUdruga" class="mt-4 bg-gray-50 rounded-2xl p-4">
+                        <h3 class="font-semibold text-blue-950 mb-3">Dodaj recenziju</h3>
+                        <div class="mb-3">
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Ocjena (1-5)</label>
+                            <input v-model="recenzijaForma.rating" type="number" min="1" max="5"
+                                class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-950" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="block text-xs font-medium text-gray-700 mb-1">ID zadatka</label>
+                            <input v-model="recenzijaForma.task_id" type="number"
+                                class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-950" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Komentar</label>
+                            <textarea v-model="recenzijaForma.comment" rows="3"
+                                class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-950"></textarea>
+                        </div>
+                        <p v-if="recenzijaUspjeh" class="text-green-600 text-xs mb-2">{{ recenzijaUspjeh }}</p>
+                        <p v-if="recenzijaError" class="text-red-500 text-xs mb-2">{{ recenzijaError }}</p>
+                        <button @click="dodajRecenziju"
+                            class="w-full bg-blue-950 text-white py-2 rounded-xl text-sm hover:bg-blue-900 transition">
+                            Dodaj recenziju
+                        </button>
                     </div>
                 </div>
             </div>
