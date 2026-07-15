@@ -1,6 +1,6 @@
 <script setup>
 import api from '@/api/axios.js';
-import { ref, onMounted, computed, h } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRoute } from 'vue-router';
 
 const route = useRoute();
@@ -11,10 +11,16 @@ const error = ref('');
 const uspjeh = ref('');
 const razina = ref(false);
 const uredi = ref(false);
-const recenzijaUspjeh = ref('')
-const recenzijaError = ref('')
+const recenzijaUspjeh = ref('');
+const recenzijaError = ref('');
+const zavrseniZadaci = ref([]);
 
-const trenutniUser = JSON.parse(localStorage.getItem('user') || '{}');
+let trenutniUser = {};
+try {
+    trenutniUser = JSON.parse(localStorage.getItem('user') || '{}');
+} catch(e) {
+    console.error(e);
+}
 const jeVlastiti = computed(() => profil.value?.user_id === trenutniUser.id);
 const jeUdruga = computed(() => trenutniUser.role === 'udruga')
 
@@ -34,12 +40,22 @@ const recenzijaForma = ref({
 
 onMounted(async() => {
     await dohvatiProfil();
-    await dohvatiPovijest();
-    await dohvatiRecenzije();
+    if (profil.value) {
+        await dohvatiPovijest();
+        await dohvatiRecenzije();
+        if(jeUdruga.value) {
+            await dohvatiZavrseneZadatke();
+        }
+    }
 })
 
 const dohvatiProfil = async() => {
     try {
+        if (!route.params.id) {
+            error.value = "Nedostaje ID volontera";
+            return;
+        }
+
         const response = await api.get(`/volonter/profil/${route.params.id}`);
         profil.value = response.data;
         forma.value = {
@@ -51,12 +67,12 @@ const dohvatiProfil = async() => {
             profile_image: profil.value.profile_image || ''
         }
     } catch (err) {
-        console.error(err);
+        console.error("Greška:", err);
     }
 }
 const dohvatiPovijest = async() => {
     try {
-        const response = await api.get('/volonter/profil/povijest');
+        const response = await api.get(`/volonter/profil/${route.params.id}/povijest`);
         povijest.value = response.data;
     } catch (err) {
         console.error(err);
@@ -64,6 +80,9 @@ const dohvatiPovijest = async() => {
 } 
 const dohvatiRecenzije = async() => {
     try {
+        if (!profil.value?.id) {
+            return;
+        }
         const response = await api.get(`/recenzije/all/${profil.value.id}`);
         recenzije.value = response.data;
     } catch (err) {
@@ -90,6 +109,14 @@ const dodajRecenziju = async() => {
         await dohvatiRecenzije()
     } catch (err) {
         recenzijaError.value = err.response?.data?.message || 'Greška pri dodavanju recenzije'
+    }
+}
+const dohvatiZavrseneZadatke = async() => {
+    try {
+        const response = await api.get(`/recenzije/zavrseni/${profil.value.id}`);
+        zavrseniZadaci.value = response.data;
+    } catch (err) {
+        console.error(err);
     }
 }
 </script>
@@ -192,9 +219,12 @@ const dodajRecenziju = async() => {
                                 class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-950" />
                         </div>
                         <div class="mb-3">
-                            <label class="block text-xs font-medium text-gray-700 mb-1">ID zadatka</label>
-                            <input v-model="recenzijaForma.task_id" type="number"
-                                class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-950" />
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Zadatak</label>
+                            <select v-model="recenzijaForma.task_id"
+                                class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-950">
+                                <option value="">Odaberi zadatak</option>
+                                <option v-for="zadatak in zavrseniZadaci" :key="zadatak.id" :value="zadatak.id">{{ zadatak.title }}</option>
+                            </select>
                         </div>
                         <div class="mb-3">
                             <label class="block text-xs font-medium text-gray-700 mb-1">Komentar</label>

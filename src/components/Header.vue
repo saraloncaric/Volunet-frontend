@@ -49,12 +49,12 @@ router.afterEach(() => {
           <RouterLink to="/login" class="hover:text-gray-300">Login</RouterLink>
         </div>
         <div v-else-if="user?.role === 'volonter'" class="flex items-center gap-4">
-          <RouterLink :to="{ name: 'profilVolontera', params: { id: user?.id } }" class="hover:text-gray-300">Profil</RouterLink>
+          <RouterLink :to="{ name: 'profilVolontera', params: { id: user?.volunteer_profile_id } }" class="hover:text-gray-300">Profil</RouterLink>
           <button @click="logout" class="hover:text-gray-300">Logout</button>
         </div>
 
         <div v-else-if="user?.role === 'udruga'" class="flex items-center gap-4">
-          <RouterLink :to="{ name: 'profilUdruge', params: { id: user?.id } }" class="hover:text-gray-300">Profil</RouterLink>
+          <RouterLink :to="{ name: 'profilUdruge', params: { id: user?.organization_profile_id } }" class="hover:text-gray-300">Profil</RouterLink>
           <button @click="logout" class="hover:text-gray-300">Logout</button>
         </div>
 

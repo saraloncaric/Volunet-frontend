@@ -77,9 +77,9 @@ const spremiPromjene = async() => {
         error.value = err.response?.data?.message || 'Greška pri ažuriranju profila';
     }
 }
-const otvoriZadatak = async() => {
+const otvoriZadatak = async(id) => {
     try {
-        const response = await api.get(`/udruga/zataka/${id}`);
+        const response = await api.get(`/udruga/zadatak/${id}`);
         odabranZadatak.value = response.data;
         formaZadatak.value = {
             title: odabranZadatak.value.title || '',
@@ -93,7 +93,7 @@ const otvoriZadatak = async() => {
         }
         const prijavljeniResponse = await api.get(`/udruga/zadatak/${id}/prijavljeni`);
         prijavljeniVolonteri.value = prijavljeniResponse.data;
-    } catch (error) {
+    } catch (err) {
         console.error(err);
     }
 }
@@ -113,10 +113,26 @@ const spremiZadatak = async() => {
         error.value = err.response?.data?.message || 'Greška pri ažuriranju zadatka';
     }
 }
-const obrisiZadatak = async() => {
+const obrisiZadatak = async(id) => {
     try {
         await api.delete(`/zadaci/zadatak/${id}`);
         await dohvatiZadatke();
+    } catch (err) {
+        console.error(err);
+    }
+}
+const potvrdiVolontera = async(id) => {
+    try {
+        await api.patch(`/prijave/${id}`, { status: 'potvrden' });
+        await otvoriZadatak(odabranZadatak.value.id);
+    } catch (err) {
+        console.error(err);
+    }
+}
+const odbijVolontera = async(id) => {
+    try {
+        await api.patch(`/prijave/${id}`, { status: 'odbijen' });
+        await otvoriZadatak(odabranZadatak.value.id);
     } catch (err) {
         console.error(err);
     }
@@ -155,10 +171,6 @@ const obrisiZadatak = async() => {
                                 <input v-model="forma.name" type="text" class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-950" />
                             </div>
                             <div>
-                                <label class="block text-xs font-medium text-gray-700 mb-1">Opis</label>
-                                <textarea v-model="forma.description" rows="3" class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-950"></textarea>
-                            </div>
-                            <div>
                                 <label class="block text-xs font-medium text-gray-700 mb-1">Lokacija</label>
                                 <input v-model="forma.location" type="text" class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-950" />
                             </div>
@@ -169,6 +181,10 @@ const obrisiZadatak = async() => {
                             <div>
                                 <label class="block text-xs font-medium text-gray-700 mb-1">Telefon</label>
                                 <input v-model="forma.phone" type="text" class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-950" />
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Opis</label>
+                                <textarea v-model="forma.description" rows="3" class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-950"></textarea>
                             </div>
                             <div>
                                 <label class="block text-xs font-medium text-gray-700 mb-1">URL logotipa</label>
@@ -197,12 +213,89 @@ const obrisiZadatak = async() => {
                                     <span v-if="zadatak.is_urgent" class="text-xs font-bold px-2 py-1 rounded-full bg-red-100 text-red-600">Hitno</span>
                                 </div>
                                 <p class="font-semibold text-blue-950">{{ zadatak.title }}</p>
-                                <p class="text-xs text-gray-500 mt-1">📍 {{ zadatak.location }} · 📅 {{ new Date(zadatak.start_date).toLocaleDateString('hr-HR') }}</p>
+                                <p class="text-xs text-gray-500 mt-1"> {{ zadatak.location }}, {{ new Date(zadatak.start_date).toLocaleDateString('hr-HR') }}</p>
                             </div>
                             <button v-if="jeVlastiti" @click.stop="obrisiZadatak(zadatak.id)"
                                 class="text-red-400 hover:text-red-600 text-lg transition">
                                 🗑️
                             </button>
+                        </div>
+                        <div v-if="odabranZadatak" class="fixed inset-0 z-50 flex items-center justify-center">
+                            <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="zatvoriZadatak"></div>
+                            <div class="relative z-10 bg-white rounded-2xl shadow-xl p-8 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+                                <button @click="zatvoriZadatak" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl">✕</button>
+                                <h2 class="text-2xl font-bold text-blue-950 mb-6">Uredi zadatak</h2>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="col-span-2">
+                                        <label class="block text-sm font-medium mb-1">Naziv</label>
+                                        <input v-model="formaZadatak.title" class="w-full border border-gray-200 rounded-xl px-3 py-2" />
+                                    </div>
+                                    <div class="col-span-2">
+                                        <label class="block text-sm font-medium mb-1">Opis</label>
+                                        <textarea v-model="formaZadatak.description" rows="4" class="w-full border border-gray-200 rounded-xl px-3 py-2"></textarea>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium mb-1">Lokacija</label>
+                                        <input v-model="formaZadatak.location" class="w-full border border-gray-200 rounded-xl px-3 py-2" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium mb-1">Maks. volontera</label>
+                                        <input type="number" v-model="formaZadatak.max_volunteers" class="w-full border border-gray-200 rounded-xl px-3 py-2" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium mb-1">Početak</label>
+                                        <input type="date" v-model="formaZadatak.start_date" class="w-full border border-gray-200 rounded-xl px-3 py-2" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium mb-1">Kraj</label>
+                                        <input type="date" v-model="formaZadatak.end_date" class="w-full border border-gray-200 rounded-xl px-3 py-2" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium mb-1">Vrijeme</label>
+                                        <input type="time" v-model="formaZadatak.start_time" class="w-full border border-gray-200 rounded-xl px-3 py-2" />
+                                    </div>
+                                    <div class="flex items-center mt-7">
+                                        <label class="flex items-center gap-2">
+                                        <input type="checkbox" v-model="formaZadatak.is_urgent" />
+                                            Hitan zadatak
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="mt-8">
+                                    <h3 class="text-lg font-semibold text-blue-950 mb-3">Prijavljeni volonteri</h3>
+                                    <div v-if="prijavljeniVolonteri.length === 0" class="text-gray-400 text-sm">
+                                        Nema prijavljenih volontera.
+                                    </div>
+                                    <div v-for="volonter in prijavljeniVolonteri" :key="volonter.id" class="border border-gray-300 rounded-xl p-4 mb-3 flex justify-between items-center">
+                                        <div>
+                                            <p class="font-semibold">{{ volonter.name }} {{ volonter.surname }}</p>
+                                            <p class="text-sm text-gray-500">{{ volonter.email }}</p>
+                                            <span class="text-xs px-2 py-1 rounded-full"
+                                                :class="volonter.status === 'potvrden' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'">
+                                                {{ volonter.status }}
+                                            </span>
+                                        </div>
+                                        <div class="flex gap-1">
+                                            <button v-if="volonter.status !== 'potvrden'" @click.stop="potvrdiVolontera(volonter.prijava_id)"
+                                                class="bg-green-700 hover:bg-green-500 text-white px-2 py-1 rounded-xl">
+                                                Prihvati
+                                            </button>
+                                            <button v-if="volonter.status !== 'odbijen'" @click.stop="odbijVolontera(volonter.prijava_id)"
+                                                class="bg-red-800 text-white px-2 py-1 rounded-xl hover:bg-red-600">
+                                                Odbij
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex justify-end gap-3 mt-8">
+                                    <button @click="zatvoriZadatak" class="px-5 py-2 rounded-xl border border-gray-300 hover:bg-gray-100">
+                                        Odustani
+                                    </button>
+                                    <button @click="spremiZadatak" class="px-5 py-2 rounded-xl bg-blue-950 text-white hover:bg-blue-900">
+                                        Spremi promjene
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
