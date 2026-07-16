@@ -16,7 +16,6 @@ const boxUspjeh = ref('');
 const boxError = ref('');
 const formaError = ref('');
 const formaUspjeh = ref('');
-const brojPrijavljenih = ref(0);
 const prijavljeniVolonteri = ref([]);
 const jePrijavljen = ref(false)
 
@@ -147,6 +146,9 @@ const dodajZadatak = async() => {
 }
 const otvoriProfil = (id) => {
   router.push(`/volonter/${id}`);
+}
+const otvoriUdrugu = (id) => {
+  router.push(`/udruga/${id}`);
 }
 </script>
 
@@ -285,7 +287,9 @@ const otvoriProfil = (id) => {
           </div>
 
           <div class="flex justify-between items-center">
-            <span class="border border-amber-300 bg-amber-50 rounded-xl px-2.5 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">{{ zadatak.organization_name }}</span>
+            <span @click="otvoriUdrugu(zadatak.organization_user_id)" class="border border-amber-300 bg-amber-50 rounded-xl px-2.5 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer hover:underline">
+              {{ zadatak.organization_name }}
+            </span>
             <button @click="otvoriBox(zadatak.id)" class="bg-blue-950 text-white text-sm px-5 py-2 rounded-xl hover:bg-blue-900 transition">
               Detalji
             </button>
@@ -316,7 +320,7 @@ const otvoriProfil = (id) => {
             <span>📅 {{ new Date(odabranZadatak.start_date).toLocaleDateString('hr-HR') }} - {{ new Date(odabranZadatak.end_date).toLocaleDateString('hr-HR') }}</span>
             <span v-if="odabranZadatak.start_time">🕐 {{ odabranZadatak.start_time }}</span>
             <span v-if="odabranZadatak.max_volunteers">👥 Maksimalno volontera: {{ odabranZadatak.max_volunteers }}</span>  
-              <span v-if="odabranZadatak.max_volunteers">Preostalo mjesta: {{ odabranZadatak.max_volunteers - prijavljeniVolonteri.length }}</span>
+              <span v-if="odabranZadatak.max_volunteers">Preostalo mjesta: {{ odabranZadatak.max_volunteers - odabranZadatak.applications_count }}</span>
             <span>🏢 {{ odabranZadatak.organization_name }}</span>
         </div>
 

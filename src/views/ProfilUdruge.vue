@@ -44,7 +44,7 @@ onMounted(async() => {
 
 const dohvatiZadatke = async() => {
     try {
-        const response = await api.get('/udruga/zadaci');
+        const response = await api.get(`/udruga/profil/${route.params.id}/zadaci`);
         zadaci.value = response.data;
     } catch (err) {
         console.error(err);
