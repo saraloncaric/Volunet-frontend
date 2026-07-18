@@ -21,6 +21,7 @@ const jePrijavljen = ref(false)
 
 const trenutniUser = JSON.parse(localStorage.getItem('user') || '{}');
 const jeUdruga = computed(() => trenutniUser.role === 'udruga');
+const jeAdmin = computed(() => trenutniUser.role === 'admin');
 
 const noviZadatakForma = ref({
   title: '',
@@ -150,6 +151,14 @@ const otvoriProfil = (id) => {
 const otvoriUdrugu = (id) => {
   router.push(`/udruga/${id}`);
 }
+const obrisiZadatak = async(id) => {
+  try {
+        await api.delete(`/zadaci/zadatak/${id}`);
+        await dohvatiZadatke();
+    } catch (err) {
+        console.error(err);
+    }
+}
 </script>
 
 <template>
@@ -267,7 +276,7 @@ const otvoriUdrugu = (id) => {
         <div v-for="zadatak in zadaci" :key="zadatak.id"
           class="bg-white rounded-2xl shadow p-6 hover:shadow-md transition">
 
-          <div class="flex justify-between items-start mb-2">
+          <div class="flex gap-2 items-start mb-2">
             <span class="text-xs font-semibold px-3 py-1 rounded-full"
               :class="zadatak.category_name ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-500'">
               {{ zadatak.category_name || 'Ostalo' }}
@@ -276,6 +285,10 @@ const otvoriUdrugu = (id) => {
               class="text-xs font-bold px-3 py-1 rounded-full bg-red-100 text-red-600">
               Hitno
             </span>
+              <button v-if="jeAdmin" @click.stop="obrisiZadatak(zadatak.id)" 
+                class="ml-auto text-red-400 hover:text-red-600 text-lg transition">
+                🗑️
+              </button>
           </div>
 
           <h3 class="text-lg font-bold text-blue-950 mb-1">{{ zadatak.title }}</h3>
