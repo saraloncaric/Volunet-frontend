@@ -123,7 +123,7 @@ const obrisiZadatak = async(id) => {
 }
 const potvrdiVolontera = async(id) => {
     try {
-        await api.patch(`/prijave/${id}`, { status: 'potvrden' });
+        await api.patch(`/zadacivolonteri/prijava/${id}`, { status: 'potvrden' });
         await otvoriZadatak(odabranZadatak.value.id);
     } catch (err) {
         console.error(err);
@@ -131,7 +131,7 @@ const potvrdiVolontera = async(id) => {
 }
 const odbijVolontera = async(id) => {
     try {
-        await api.patch(`/prijave/${id}`, { status: 'odbijen' });
+        await api.patch(`/zadacivolonteri/prijava/${id}`, { status: 'odbijen' });
         await otvoriZadatak(odabranZadatak.value.id);
     } catch (err) {
         console.error(err);

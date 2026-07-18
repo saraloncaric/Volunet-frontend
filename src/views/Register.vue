@@ -35,12 +35,12 @@ const registracija = async() => {
         } else if(role.value === 'udruga') {
             payload.naziv = naziv.value;
         }
-        const response = await api.post('/auth/registracija', payload);
+        const response = await api.post('/users/registracija', payload);
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('user', JSON.stringify(response.data.user));
         router.push('/');
     } catch (err) {
-        error.value = err.response?.data?.poruka || 'Greška pri registraciji';
+        error.value = err.response?.data?.message || 'Greška pri registraciji';
     }
 }
 </script>
