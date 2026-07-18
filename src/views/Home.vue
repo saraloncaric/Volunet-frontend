@@ -300,7 +300,7 @@ const obrisiZadatak = async(id) => {
           </div>
 
           <div class="flex justify-between items-center">
-            <span @click="otvoriUdrugu(zadatak.organization_user_id)" class="border border-amber-300 bg-amber-50 rounded-xl px-2.5 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer hover:underline">
+            <span @click="otvoriUdrugu(zadatak.organization_profile_id)" class="border border-amber-300 bg-amber-50 rounded-xl px-2.5 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer hover:underline">
               {{ zadatak.organization_name }}
             </span>
             <button @click="otvoriBox(zadatak.id)" class="bg-blue-950 text-white text-sm px-5 py-2 rounded-xl hover:bg-blue-900 transition">
