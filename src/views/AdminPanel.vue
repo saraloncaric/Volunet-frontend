@@ -1,5 +1,5 @@
 <script setup>
-import api from '@/api/axios';
+import api from '@/api/axios.js';
 import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 
@@ -21,9 +21,9 @@ const dohvatiKorisnike = async() => {
 }
 const otvoriProfil = (korisnik) => {
     if(korisnik.role === 'volonter') {
-        router.push(`/volonter/${korisnik.id}`);
+        router.push(`/volonter/${korisnik.volunteer_profile_id}`);
     } else if(korisnik.role === 'udruga') {
-        router.push(`/udruga/${korisnik.id}`);
+        router.push(`/udruga/${korisnik.organization_profile_id}`);
     }
 }
 </script>

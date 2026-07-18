@@ -22,7 +22,8 @@ try {
     console.error(e);
 }
 const jeVlastiti = computed(() => profil.value?.user_id === trenutniUser.id);
-const jeUdruga = computed(() => trenutniUser.role === 'udruga')
+const jeUdruga = computed(() => trenutniUser.role === 'udruga');
+const jeAdmin = computed(() => trenutniUser.role === 'admin');
 
 const forma = ref({
     name: '',
@@ -119,6 +120,14 @@ const dohvatiZavrseneZadatke = async() => {
         console.error(err);
     }
 }
+const obrisiRecenziju = async(id) => {
+    try {
+        await api.delete(`/recenzije/delete/${id}`);
+        await dohvatiRecenzije();
+    } catch (err) {
+        console.error(err);
+    }
+}
 </script>
 <template>
     <div class="min-h-screen bg-gray-50 px-8 py-10">
@@ -201,11 +210,15 @@ const dohvatiZavrseneZadatke = async() => {
                     </div>
                     <div class="flex flex-col gap-3">
                         <div v-for="recenzija in recenzije" :key="recenzija.id" class="border border-gray-200 rounded-xl p-4 flex flex-col gap-2">
-                            <div class="flex justify-between items-center">
+                            <div class="flex gap-3 items-center">
                                 <p class="font-semibold text-blue-950 text-base">{{ recenzija.organization_name }}</p>
                                 <div class="flex gap-1">
                                     <span v-for="i in 5" :key="i" class="text-sm" :class="i <= recenzija.rating ? 'text-amber-400' : 'text-gray-200'">★</span>
                                 </div>
+                                <button v-if="jeAdmin" @click.stop="obrisiRecenziju(recenzija.id)" 
+                                    class="ml-auto text-red-400 hover:text-red-600 text-lg transition">
+                                    🗑️
+                                </button>
                             </div>
                             <p class="text-sm">{{ recenzija.task_title }}</p>
                             <p class="text-xs text-gray-500 italic">"{{ recenzija.comment }}"</p>

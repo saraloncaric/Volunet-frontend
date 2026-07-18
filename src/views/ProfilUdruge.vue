@@ -220,7 +220,7 @@ const odbijVolontera = async(id) => {
                                 🗑️
                             </button>
                         </div>
-                        <div v-if="odabranZadatak" class="fixed inset-0 z-50 flex items-center justify-center">
+                        <div v-if="jeVlastiti && odabranZadatak" class="fixed inset-0 z-50 flex items-center justify-center">
                             <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="zatvoriZadatak"></div>
                             <div class="relative z-10 bg-white rounded-2xl shadow-xl p-8 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
                                 <button @click="zatvoriZadatak" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl">✕</button>
