@@ -1,9 +1,10 @@
 <script setup>
 import api from '@/api/axios.js';
-import { ref, onMounted, onBeforeUnmount } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
-const router = useRouter()
+const router = useRouter();
+const route = useRoute();
 const logiranUser = ref(false);
 const user = ref(null);
 
@@ -39,26 +40,32 @@ onBeforeUnmount(() => {
 router.afterEach(() => {
   checkAuth();
 })
+const gumbPocetna = computed(() => {
+  return route.name !== 'home';
+})
 </script>
 
 <template>
     <nav class="fixed top-0 left-0 right-0 z-50 bg-blue-950 text-white px-6 py-5 flex justify-between items-center">
       <RouterLink to="/" class="text-xl font-bold text-white">VoluNet</RouterLink>
-      <div class="flex items-center">
-        <div v-if="!logiranUser" class="flex items-center gap-4">
+      <div class="flex items-center gap-3">
+        <div v-if="gumbPocetna" class="flex items-center gap-3">
+          <RouterLink to="/" class="hover:text-gray-300">Početna</RouterLink>
+        </div>
+        <div v-if="!logiranUser" class="flex items-center gap-3">
           <RouterLink to="/login" class="hover:text-gray-300">Login</RouterLink>
         </div>
-        <div v-else-if="user?.role === 'volonter'" class="flex items-center gap-4">
+        <div v-else-if="user?.role === 'volonter'" class="flex items-center gap-3">
           <RouterLink :to="{ name: 'profilVolontera', params: { id: user?.volunteer_profile_id } }" class="hover:text-gray-300">Profil</RouterLink>
           <button @click="logout" class="hover:text-gray-300">Logout</button>
         </div>
 
-        <div v-else-if="user?.role === 'udruga'" class="flex items-center gap-4">
+        <div v-else-if="user?.role === 'udruga'" class="flex items-center gap-3">
           <RouterLink :to="{ name: 'profilUdruge', params: { id: user?.organization_profile_id } }" class="hover:text-gray-300">Profil</RouterLink>
           <button @click="logout" class="hover:text-gray-300">Logout</button>
         </div>
 
-        <div v-else-if="user?.role === 'admin'" class="flex items-center gap-4">
+        <div v-else-if="user?.role === 'admin'" class="flex items-center gap-3">
           <RouterLink to="/admin" class="hover:text-gray-300">Admin</RouterLink>
           <button @click="logout" class="hover:text-gray-300">Logout</button>
         </div>

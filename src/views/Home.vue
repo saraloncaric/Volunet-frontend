@@ -358,7 +358,7 @@ const obrisiZadatak = async(id) => {
         <button v-if="jePrijavljen && !jeUdruga" disabled class="w-full bg-green-500 text-white py-3 rounded-xl font-semibold cursor-not-allowed">
             Prijavljen
         </button>
-        <button v-else-if="!jeUdruga" @click="prijaviSe" class="w-full bg-blue-950 text-white py-3 rounded-xl font-semibold hover:bg-blue-900 transition">
+        <button v-else-if="!trenutniUser && !jeUdruga" @click="prijaviSe" class="w-full bg-blue-950 text-white py-3 rounded-xl font-semibold hover:bg-blue-900 transition">
             Prijavi se
         </button>
     </div>
