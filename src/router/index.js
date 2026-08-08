@@ -1,4 +1,5 @@
 import AdminPanel from "@/views/AdminPanel.vue";
+import ChatView from "@/views/ChatView.vue";
 import DetaljiZadatka from "@/views/DetaljiZadatka.vue";
 import Home from "@/views/Home.vue";
 import Login from "@/views/Login.vue";
@@ -44,6 +45,11 @@ const router = createRouter({
             path: '/admin',
             name: 'adminPanel',
             component: AdminPanel
+        },
+        {
+            path: '/chat',
+            name: 'chat',
+            component: ChatView
         },
     ]
 })
