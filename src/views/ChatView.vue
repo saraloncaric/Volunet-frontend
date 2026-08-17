@@ -13,13 +13,27 @@ const search = ref('');
 const trenutniUser = JSON.parse(localStorage.getItem('user') || '{}');
 
 const filtriraniChatovi = computed(() => {
-    return razgovori.value.filter(razgovor => razgovor.email.toLowerCase().includes(search.value.toLowerCase()));
+    return razgovori.value.filter(razgovor => razgovor.name.toLowerCase().includes(search.value.toLowerCase()));
 })
 
 const dohvatiRazgovore = async() => {
     try {
         const response = await api.get('/chat/conversations');
         razgovori.value = response.data;
+    } catch (err) {
+        console.error(err);
+    }
+}
+const otvoriRazgovorSKorisnikom = async(user_id) => {
+    try {
+        const postojeciChat = razgovori.value.find(razgovor => razgovor.user_id === Number(user_id));
+        if (postojeciChat) {
+            await otvoriChat(postojeciChat.id);
+            return;
+        }
+        const response = await api.post('/chat/conversation', { user2_id: Number(user_id) });
+        await dohvatiRazgovore();
+        await otvoriChat(response.data.id);
     } catch (err) {
         console.error(err);
     }
@@ -35,10 +49,13 @@ const otvoriChat = async(conversation_id) => {
     }
 }
 const posaljiPoruku = async() => {
+    if (!novaPoruka.value.trim()) {
+        return;
+    }
     try {
-        const response = await api.post('/chat/message', {
+        await api.post('/chat/message', {
             conversation_id: trenutniChat.value,
-            content: novaPoruka.value
+            content: novaPoruka.value.trim()
         });
         novaPoruka.value = '';
         await otvoriChat(trenutniChat.value);
@@ -57,6 +74,9 @@ const oznaciProcitano = async(conversation_id) => {
 }
 onMounted(async() => {
     await dohvatiRazgovore();
+    if (route.query.user_id) {
+        await otvoriRazgovorSKorisnikom(route.query.user_id);
+    }
 })
 </script>
 <template>
@@ -73,14 +93,11 @@ onMounted(async() => {
             </div>
             <div class="flex-1 overflow-y-auto">
                <div v-for="razgovor in filtriraniChatovi" @click="otvoriChat(razgovor.id)"
-                    class="flex items-center gap-3 px-3 py-2.5 cursor-pointer border-b border-gray-100 transition hover:bg-gray-50"
+                    class="flex items-center gap-3 px-4 py-2.5 cursor-pointer border-b border-gray-100 transition hover:bg-gray-50"
                     :class="{ 'bg-gray-50 border-l-3 border-blue-900': trenutniChat === razgovor.id }">
-                    <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-900 flex items-center justify-center font-semibold shrink-0">
-                        {{ razgovor.email?.charAt(0).toUpperCase() }}
-                    </div>
                     <div class="min-w-0">
-                        <p class="font-medium text-gray-800 truncate">
-                            {{ razgovor.email }}
+                        <p class="font-medium font-sans text-gray-800 truncate">
+                            {{ razgovor.name }}
                         </p>
                         <p class="text-xs text-gray-400 mt-0.5">Razgovor</p>
                     </div>
@@ -93,12 +110,9 @@ onMounted(async() => {
         <div class="flex-1 h-full min-h-0">
             <div v-if="trenutniChat" class="h-full flex flex-col min-h-0 pt-2">
                 <div class="border-b border-gray-100 px-6 py-3 flex items-center gap-3 shrink-0">
-                    <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-950 flex items-center justify-center font-semibold">
-                        {{ razgovori.find(r => r.id === trenutniChat)?.email?.charAt(0).toUpperCase() }}
-                    </div>
                     <div>
-                        <h2 class="font-semibold text-lg text-blue-950">
-                            {{ razgovori.find(r => r.id === trenutniChat)?.email }}
+                        <h2 class="font-semibold font-sans text-lg text-blue-950">
+                            {{ razgovori.find(r => r.id === trenutniChat)?.name }}
                         </h2>
                         <p class="text-xs text-gray-400">Razgovor</p>
                     </div>
@@ -129,7 +143,8 @@ onMounted(async() => {
                     <div class="flex gap-2">
                         <input v-model="novaPoruka" @keyup.enter="posaljiPoruku" type="text" placeholder="Napišite poruku..."
                             class="flex-1 border border-gray-300 rounded-xl px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-900">
-                        <button @click="posaljiPoruku" class="bg-blue-950 text-white px-3 rounded-xl hover:bg-blue-950 transition">
+                        <button @click="posaljiPoruku" :disabled="!novaPoruka.trim()" 
+                            class="bg-blue-950 text-white px-3 rounded-xl hover:bg-blue-950 transition disabled:opacity-40 disabled:cursor-not-allowed">
                             ▷
                         </button>
                     </div>

@@ -17,11 +17,11 @@ const zavrseniZadaci = ref([]);
 
 let trenutniUser = {};
 try {
-    trenutniUser = JSON.parse(localStorage.getItem('user') || '{}');
+    trenutniUser = JSON.parse(localStorage.getItem('user') || '{}' || {});
 } catch(e) {
     console.error(e);
 }
-const jeVlastiti = computed(() => profil.value?.user_id === trenutniUser.id);
+const jeVlastiti = computed(() => profil.value?.user_id === trenutniUser?.id);
 const jeUdruga = computed(() => trenutniUser.role === 'udruga');
 const jeAdmin = computed(() => trenutniUser.role === 'admin');
 
@@ -137,7 +137,13 @@ const obrisiRecenziju = async(id) => {
                     <div class="w-45 h-45">
                         <img v-if="profil.profile_image" :src="profil.profile_image" class="w-full h-full object-cover rounded-full" />
                     </div>
-                    <h5 class="text-lg font-bold text-blue-950 mt-3">{{ profil.name }} {{ profil.surname }}</h5>
+                    <div class="flex items-center justify-center gap-1">
+                        <h5 class="text-lg font-bold text-blue-950 mt-3">{{ profil.name }} {{ profil.surname }}</h5>
+                        <RouterLink v-if="!jeVlastiti" :to="{ name: 'chat', query: { user_id: profil.user_id } }" 
+                            class="inline-flex w-8 h-8 rounded-full justify-center items-center text-blue-950 hover:bg-blue-50 transition mt-2">
+                            💬
+                        </RouterLink>
+                    </div>
                     <span class="text-xs font-semibold px-3 py-1 rounded-full bg-amber-100 text-amber-700 mt-2">{{ profil.badge_level }}</span>
                     <div class="w-full border-t border-gray-100 pt-4 flex flex-col gap-2 text-sm space-y-1">
                         <hr class="border-gray-300">
