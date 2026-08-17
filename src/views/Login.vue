@@ -41,7 +41,7 @@ const login = async() => {
 
       <div class="mb-8">
         <label class="block text-sm font-medium text-gray-700 mb-1">Lozinka</label>
-        <input v-model="password" type="password" placeholder="••••••••"
+        <input v-model="password" type="password" placeholder="••••••••" @keyup.enter="login"
           class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-950" />
       </div>
 
