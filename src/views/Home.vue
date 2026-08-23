@@ -1,23 +1,22 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import api from '@/api/axios.js';
-import { useRoute, useRouter } from 'vue-router';
+import { useRouter } from 'vue-router';
 
-const route = useRoute();
 const router = useRouter();
 const zadaci = ref([]);
 const kategorije = ref([]);
 const category_id = ref('');
 const location = ref('');
 const start_date = ref('');
-const zadatak = ref(null);
 const odabranZadatak = ref(null);
 const boxUspjeh = ref('');
 const boxError = ref('');
 const formaError = ref('');
 const formaUspjeh = ref('');
 const prijavljeniVolonteri = ref([]);
-const jePrijavljen = ref(false)
+const jePrijavljen = ref(false);
+const boxZaZadatak = ref(false);
 
 const trenutniUser = JSON.parse(localStorage.getItem('user') || '{}');
 const jeUdruga = computed(() => trenutniUser.role === 'udruga');
@@ -204,70 +203,75 @@ const obrisiZadatak = async(id) => {
 
     <div class="flex-1">
       <h2 class="text-2xl font-bold text-blue-950 mb-6">Dostupni zadaci</h2>
-
-      <div v-if="jeUdruga" class="bg-white rounded-2xl shadow p-6 mb-6">
-        <h3 class="text-lg font-bold text-blue-950 mb-5">Dodaj novi zadatak</h3>
-        <div class="grid grid-cols-2 gap-4 mb-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Naziv zadatka</label>
-            <input v-model="noviZadatakForma.title" type="text" 
-              class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-950" />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Kategorije</label>
-            <select v-model="noviZadatakForma.category_id" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-950" >
-              <option value="">Odaberi kategoriju</option>
-              <option v-for="kat in kategorije" :key="kat.id" :value="kat.id">{{ kat.name }}</option>
-            </select>
-          </div>
-        </div>
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Opis</label>
-          <textarea v-model="noviZadatakForma.description" rows="3" 
-            class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-950"></textarea>
-        </div>
-        <div class="grid grid-cols-2 gap-4 mb-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Lokacija</label>
-            <input v-model="noviZadatakForma.location" type="text" 
-              class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-950" />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Maksimalno volontera</label>
-            <input v-model="noviZadatakForma.max_volunteers" type="number" 
-              class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-950"/>
-          </div>
-        </div>
-        <div class="grid grid-cols-2 gap-4 mb-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Datum početka</label>
-            <input v-model="noviZadatakForma.start_date" type="date"
-              class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-950" />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Datum završetka</label>
-            <input v-model="noviZadatakForma.end_date" type="date"
-              class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-950" />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Vrijeme početka</label>
-            <input v-model="noviZadatakForma.start_time" type="time" 
-              class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-950" />
-          </div>
-        </div>
-        <div class="flex items-center gap-3 mb-5">
-          <input v-model="noviZadatakForma.is_urgent" type="checkbox" id="urgent" class="w-4 h-4" />
-          <label for="urgent" class="text-sm text-gray-700">Hitan zadatak</label>
-        </div>
-
-        <p v-if="formaUspjeh" class="text-green-600 text-sm mb-3">{{ formaUspjeh }}</p>
-        <p v-if="formaError" class="text-red-500 text-sm mb-3">{{ formaError }}</p>
-
-        <button @click="dodajZadatak" class="w-full bg-blue-950 text-white py-3 rounded-xl font-semibold hover:bg-blue-900 transition">
-          Dodaj zadatak
+      
+      <div v-if="jeUdruga" class="mb-6">
+        <button @click="boxZaZadatak = !boxZaZadatak"
+            class="w-full flex justify-between items-center bg-white rounded-2xl shadow p-4.5 hover:shadow-md cursor-pointer transition">
+            <span class="font-semibold text-blue-950">Dodaj novi zadatak</span>
+            <span class="text-xl text-blue-950"></span>
         </button>
-    </div>
-
+        <div v-if="boxZaZadatak" class="bg-white rounded-2xl shadow p-6 mt-2">
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Naziv zadatka</label>
+                    <input v-model="noviZadatakForma.title" type="text"
+                        class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-950" />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Kategorije</label>
+                    <select v-model="noviZadatakForma.category_id"
+                        class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-950">
+                        <option value="">Odaberi kategoriju</option>
+                        <option v-for="kat in kategorije" :key="kat.id" :value="kat.id">{{ kat.name }}</option>
+                    </select>
+                </div>
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Opis</label>
+                <textarea v-model="noviZadatakForma.description" rows="3"
+                    class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-950"></textarea>
+            </div>
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Lokacija</label>
+                    <input v-model="noviZadatakForma.location" type="text"
+                        class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-950" />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Maksimalno volontera</label>
+                    <input v-model="noviZadatakForma.max_volunteers" type="number"
+                        class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-950" />
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Datum početka</label>
+                    <input v-model="noviZadatakForma.start_date" type="date"
+                        class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-950" />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Datum završetka</label>
+                    <input v-model="noviZadatakForma.end_date" type="date"
+                        class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-950" />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Vrijeme početka</label>
+                    <input v-model="noviZadatakForma.start_time" type="time"
+                        class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-950" />
+                </div>
+            </div>
+            <div class="flex items-center gap-3 mb-5">
+                <input v-model="noviZadatakForma.is_urgent" type="checkbox" id="urgent" class="w-4 h-4" />
+                <label for="urgent" class="text-sm text-gray-700">Hitan zadatak</label>
+            </div>
+            <p v-if="formaUspjeh" class="text-green-600 text-sm mb-3">{{ formaUspjeh }}</p>
+            <p v-if="formaError" class="text-red-500 text-sm mb-3">{{ formaError }}</p>
+            <button @click="dodajZadatak"
+                class="w-full bg-blue-950 text-white py-3 rounded-xl font-semibold hover:bg-blue-900 transition">
+                Dodaj zadatak
+            </button>
+        </div>
+      </div>
       <div v-if="zadaci.length === 0" class="text-gray-400 text-sm">
         Nema dostupnih zadataka.
       </div>
@@ -358,7 +362,7 @@ const obrisiZadatak = async(id) => {
         <button v-if="jePrijavljen && !jeUdruga" disabled class="w-full bg-green-500 text-white py-3 rounded-xl font-semibold cursor-not-allowed">
             Prijavljen
         </button>
-        <button v-else-if="!trenutniUser && !jeUdruga" @click="prijaviSe" class="w-full bg-blue-950 text-white py-3 rounded-xl font-semibold hover:bg-blue-900 transition">
+        <button v-else-if="trenutniUser.id && !jeUdruga" @click="prijaviSe" class="w-full bg-blue-950 text-white py-3 rounded-xl font-semibold hover:bg-blue-900 transition">
             Prijavi se
         </button>
     </div>

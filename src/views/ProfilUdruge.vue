@@ -34,7 +34,8 @@ const formaZadatak = ref({
     end_date: '',
     start_time: '',
     max_volunteers: '',
-    is_urgent: false
+    is_urgent: false,
+    status: 'aktivan'
 })
 
 onMounted(async() => {
@@ -89,7 +90,8 @@ const otvoriZadatak = async(id) => {
             end_date: odabranZadatak.value.end_date?.split('T')[0] || '',
             start_time: odabranZadatak.value.start_time || '',
             max_volunteers: odabranZadatak.value.max_volunteers || '',
-            is_urgent: odabranZadatak.value.is_urgent || false
+            is_urgent: odabranZadatak.value.is_urgent || false,
+            status: odabranZadatak.value.status || 'aktivan'
         }
         const prijavljeniResponse = await api.get(`/udruga/zadatak/${id}/prijavljeni`);
         prijavljeniVolonteri.value = prijavljeniResponse.data;
@@ -104,11 +106,18 @@ const zatvoriZadatak = () => {
 }
 const spremiZadatak = async() => {
     try {
-        await api.put(`/zadaci/zadatak/${odabranZadatak.value.id}`, formaZadatak.value);
+        const payload = {
+            ...formaZadatak.value,
+            end_date: formaZadatak.value.end_date || null,
+            start_date: formaZadatak.value.start_date || null,
+            start_time: formaZadatak.value.start_time || null,
+            max_volunteers: formaZadatak.value.max_volunteers ? parseInt(formaZadatak.value.max_volunteers) : null,
+        }
+        await api.put(`/zadaci/zadatak/${odabranZadatak.value.id}`, payload);
         uspjeh.value = 'Zadatak uspješno ažuriran';
         urediZadatak.value = false;
+        odabranZadatak.value = null;
         await dohvatiZadatke();
-        await otvoriZadatak(odabranZadatak.value.id); 
     } catch (err) {
         error.value = err.response?.data?.message || 'Greška pri ažuriranju zadatka';
     }
@@ -259,6 +268,14 @@ const odbijVolontera = async(id) => {
                                     <div>
                                         <label class="block text-sm font-medium mb-1">Vrijeme</label>
                                         <input type="time" v-model="formaZadatak.start_time" class="w-full border border-gray-200 rounded-xl px-3 py-2" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium mb-1">Status</label>
+                                        <select v-model="formaZadatak.status" class="w-full border border-gray-200 rounded-xl px-3 py-2">
+                                            <option value="aktivan">Aktivan</option>
+                                            <option value="zavrsen">Zavrsen</option>
+                                            <option value="otkazan">Otkazan</option>
+                                        </select>
                                     </div>
                                     <div class="flex items-center mt-7">
                                         <label class="flex items-center gap-2">
