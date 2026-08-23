@@ -9,12 +9,11 @@ const trenutniChat = ref(null);
 const poruke = ref([]);
 const novaPoruka = ref('');
 const search = ref('');
+const izbornik = ref(null);
+const potvrdaBrisanja = ref(null);
+const korisnici = ref([]);
 
 const trenutniUser = JSON.parse(localStorage.getItem('user') || '{}');
-
-const filtriraniChatovi = computed(() => {
-    return razgovori.value.filter(razgovor => razgovor.name.toLowerCase().includes(search.value.toLowerCase()));
-})
 
 const dohvatiRazgovore = async() => {
     try {
@@ -29,11 +28,15 @@ const otvoriRazgovorSKorisnikom = async(user_id) => {
         const postojeciChat = razgovori.value.find(razgovor => razgovor.user_id === Number(user_id));
         if (postojeciChat) {
             await otvoriChat(postojeciChat.id);
+            search.value = '';
+            korisnici.value = [];
             return;
         }
         const response = await api.post('/chat/conversation', { user2_id: Number(user_id) });
         await dohvatiRazgovore();
-        await otvoriChat(response.data.id);
+        await otvoriChat(response.data.razgovor?.id || response.data.id);
+        search.value = '';
+        korisnici.value = [];
     } catch (err) {
         console.error(err);
     }
@@ -72,6 +75,72 @@ const oznaciProcitano = async(conversation_id) => {
         console.error(err);
     }
 }
+const searchKorisnika = async() => {
+    try {
+        const response = await api.get('/chat/search', {
+            params: { query: search.value }
+        });
+        korisnici.value = response.data;
+    } catch (err) {
+        console.error(err);
+    }
+}
+const readatVrijeme = (read_at) => {
+    if(!read_at) {
+        return;
+    }
+    const datum = new Date(read_at);
+    return `Pročitano u ${datum.toLocaleTimeString('hr-HR', {
+        hour: '2-digit',
+        minute: '2-digit'
+    })}`;
+}
+const obrisiRazgovor = async(id) => {
+    try {
+        await api.delete(`/chat/delete/${id}`);
+        if(trenutniChat.value === id) {
+            trenutniChat.value = null;
+            poruke.value = [];
+        }
+        izbornik.value = null;
+        potvrdaBrisanja.value = null;
+        await dohvatiRazgovore();
+    } catch(err) {
+        console.error(err);
+    }
+    
+}
+const obrisiPoruku = async(id) => {
+    try {
+        await api.delete(`/chat/deletemessage/${id}`);
+        izbornik.value = null;
+        potvrdaBrisanja.value = null;
+        await otvoriChat(trenutniChat.value);
+    } catch (err) {
+        console.error(err);
+    }
+}
+const prikaziPotvrdu = async(tip, id) => {
+    potvrdaBrisanja.value = { 
+        tip: tip, 
+        id: id 
+    };
+    izbornik.value = null;
+}
+const potvrda = async() => {
+    if(!potvrdaBrisanja.value) {
+        return;
+    }
+    const tip = potvrdaBrisanja.value.tip;
+    const id = potvrdaBrisanja.value.id;
+    potvrdaBrisanja.value = null;
+    if (tip === 'razgovor') {
+        await obrisiRazgovor(id);
+    }
+    if (tip === 'poruka') {
+        await obrisiPoruku(id);
+    }
+}
 onMounted(async() => {
     await dohvatiRazgovore();
     if (route.query.user_id) {
@@ -81,28 +150,56 @@ onMounted(async() => {
 </script>
 <template>
     <div class="flex h-[calc(100vh-90px)] bg-gray-50 overflow-hidden">
-        <div class="w-77.5 bg-white border-r border-gray-100 flex flex-col shrink-0">
+        <div class="w-77 bg-white border-r border-gray-100 flex flex-col shrink-0">
             <div class="px-5 pt-5 pb-4 border-b border-gray-100">
                 <h1 class="text-xl font-semibold text-blue-950 mb-4">Razgovori</h1>
                 <div class="relative">
-                    <input v-model="search" type="text" placeholder="Pretraži razgovore..."
+                    <input v-model="search" @input="searchKorisnika" type="text" placeholder="Pretraži razgovore..."
                     class="w-full bg-gray-50 border border-gray-100 rounded-xl pl-4 pr-3 py-2.5 text-sm 
                         text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-900/20
                         focus:border-blue-900 transition"> 
+                     <div v-if="korisnici.length > 0" class="absolute left-0 right-0 top-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-30 overflow-hidden">
+                        <div v-for="korisnik in korisnici" :key="korisnik.id"
+                            @click="otvoriRazgovorSKorisnikom(korisnik.id)"
+                            class="px-4 py-3 cursor-pointer hover:bg-gray-50 border-b border-gray-100 last:border-b-0">
+                            <p class="font-medium text-gray-800">
+                                {{ korisnik.name }}
+                            </p>
+                            <p class="text-xs text-gray-400">
+                                {{ korisnik.role === 'volonter' ? 'Volonter' : 'Udruga' }}
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="flex-1 overflow-y-auto">
-               <div v-for="razgovor in filtriraniChatovi" @click="otvoriChat(razgovor.id)"
+               <div v-for="razgovor in razgovori" @click="otvoriChat(razgovor.id)"
                     class="flex items-center gap-3 px-4 py-2.5 cursor-pointer border-b border-gray-100 transition hover:bg-gray-50"
                     :class="{ 'bg-gray-50 border-l-3 border-blue-900': trenutniChat === razgovor.id }">
-                    <div class="min-w-0">
-                        <p class="font-medium font-sans text-gray-800 truncate">
-                            {{ razgovor.name }}
-                        </p>
+                    <div class="min-w-0 flex-1">
+                        <div class="flex items-center justify-between">
+                            <p class="font-medium font-sans text-gray-800 truncate">
+                                {{ razgovor.name }}
+                            </p>
+                            <div class="relative shrink-0">
+                                <button @click.stop="izbornik = izbornik === `razgovor-${razgovor.id}` ? null : `razgovor-${razgovor.id}`"
+                                    class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition">
+                                    ⋮
+                                </button>
+                                <div v-if="izbornik === `razgovor-${razgovor.id}`"
+                                    class="absolute right-0 top-9 z-20 w-28 bg-white border border-gray-200 rounded-xl shadow-lg py-1"
+                                    @click.stop>
+                                    <button @click="prikaziPotvrdu('razgovor', razgovor.id)"
+                                        class="w-full text-left px-3 py-2 text-sm text-red-500 hover:bg-red-50 transition">
+                                        Obriši
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                         <p class="text-xs text-gray-400 mt-0.5">Razgovor</p>
                     </div>
                 </div> 
-                <div v-if="filtriraniChatovi.length === 0" class="px-5 py-8 text-center text-sm text-gray-400">
+                <div v-if="razgovori.length === 0" class="px-5 py-8 text-center text-sm text-gray-400">
                     Nema razgovora
                 </div>
             </div>
@@ -118,22 +215,39 @@ onMounted(async() => {
                     </div>
                 </div>
                 <div class="flex-1 min-h-0 overflow-y-auto px-6 py-5 space-y-3">
-                    <div v-for="poruka in poruke" :key="poruka.id" 
-                        class="flex" 
+                    <div v-for="poruka in poruke" :key="poruka.id" class="flex items-center relative" 
                         :class="poruka.sender_id === trenutniUser.id ? 'justify-end' : 'justify-start'">
-                        <div class="max-w-[65%] px-3 py-2 rounded-2xl" 
-                            :class="poruka.sender_id === trenutniUser.id 
-                                ? 'bg-blue-950 text-white rounded-br-md' 
-                                : 'bg-white border-gray-200 text-gray-800 rounded-bl-md'">
-                            {{ poruka.content }}
+                        <div v-if="poruka.sender_id === trenutniUser.id" class="relative mr-2">
+                            <button 
+                                @click.stop="izbornik = izbornik === `poruka-${poruka.id}` ? null : `poruka-${poruka.id}`"
+                                class="w-7 h-7 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition">
+                                ⋮
+                            </button>
+                            <div v-if="izbornik === `poruka-${poruka.id}`"@click.stop
+                                class="absolute right-0 top-8 z-20 w-28 bg-white border border-gray-200 rounded-xl shadow-lg py-1">
+                                <button 
+                                    @click="prikaziPotvrdu('poruka', poruka.id)"
+                                    class="w-full text-left px-3 py-2 text-sm text-red-500 hover:bg-red-50 transition">
+                                    Obriši
+                                </button>
+                            </div>
+                        </div>
+                        <div class="flex flex-col min-w-0 max-w-[70%]" :class="poruka.sender_id === trenutniUser.id ? 'items-end' : 'items-start'">
+                            <div class="w-fit max-w-full px-3 py-2 rounded-2xl" 
+                                :class="poruka.sender_id === trenutniUser.id 
+                                    ? 'bg-blue-950 text-white rounded-br-md' 
+                                    : 'bg-white border-gray-200 text-gray-800 rounded-bl-md'">
+                                {{ poruka.content }}
+                            </div>
+                            <p v-if="poruka.sender_id === trenutniUser.id && poruka.read_at" 
+                                class="text-xs text-gray-400 mt-1">
+                                {{ readatVrijeme(poruka.read_at) }}
+                            </p>
                         </div>
                     </div>
                     <div v-if="poruke.length === 0" class="h-full flex items-center justify-center text-gray-400">
                         <div class="text-center">
-                            <div class="w-14 h-14 mx-auto mb-3 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 text-xl">
-                                💬
-                            </div>
-                            <p class="text-sm">
+                        <p class="text-sm">
                                 Nema poruka u ovom razgovoru
                             </p>
                         </div>
@@ -156,9 +270,30 @@ onMounted(async() => {
                         💬
                     </div>
                     <h2 class="text-lg font-medium text-gray-500">Odaberi razgovor</h2>
-                    <p class="text-sm mt-1"> Odaberi razgovor s lijeve strane kako bi vidjela poruke.</p>
+                    <p class="text-sm mt-1">Odaberi razgovor kako bi prikazali poruke.</p>
                 </div>
             </div>
         </div> 
+        <div v-if="potvrdaBrisanja" @click="potvrdaBrisanja = null"
+            class="fixed inset-0 bg-black/20 flex items-center justify-center z-50">
+            <div class="bg-white rounded-2xl shadow-xl w-80 p-5" @click.stop>
+                <h3 class="font-semibold text-blue-950 text-lg text-center">Potvrda brisanja</h3>
+                <p class="text-sm text-gray-500 mt-2 text-center">
+                    {{ potvrdaBrisanja.tip === 'razgovor' 
+                        ? 'Jeste li sigurni da želite obrisati ovaj razgovor?'
+                        : 'Jeste li sigurni da želite obrisati ovu poruku?' }}
+                </p>
+                <div class="flex gap-2 mt-5 justify-center">
+                    <button @click="potvrdaBrisanja = null" 
+                        class="px-4 py-2 justify-center rounded-xl text-sm text-gray-600 hover:bg-gray-100 transition">
+                        Odustani
+                    </button>
+                    <button @click="potvrda" 
+                        class="px-4 py-2 rounded-xl text-sm bg-red-500 text-white hover:bg-red-600 transition">
+                        Obriši
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
