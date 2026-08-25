@@ -200,7 +200,7 @@ const obrisiRecenziju = async(id) => {
                 <div class="flex flex-col gap-3">
                     <div v-for="zadatak in povijest" :key="zadatak.id" class="border border-gray-200 rounded-xl p-4 flex justify-between items-center space-y-3">
                         <div>
-                            <p class="font-semibold text-blue-950 text-base">{{ zadatak.title }}</p>
+                            <p class="font-semibold text-gray-750 text-base">{{ zadatak.title }}</p>
                             <p class="text-xs text-gray-500 mt-1">{{ new Date(zadatak.start_date).toLocaleDateString('hr-HR') }}, {{ zadatak.location }}</p>
                         </div>
                         <p class="text-xs font-semibold px-3 py-1 rounded-full"
