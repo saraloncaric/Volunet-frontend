@@ -1,9 +1,10 @@
 # Volunet-frontend
 
-## Opis
 VoluNet je web aplikacija namijenjena povezivanju udruga i volontera. 
-Frontend omogućuje korisnicima pregled i filtriranje volonterskih zadataka, prijavu na zadatke, upravljanje profilom, komunikaciju putem poruka te korištenje drugih funkcionalnosti ovisno o korisničkoj ulozi.
 
+## Opis
+Frontend omogućuje korisnicima pregled i filtriranje volonterskih zadataka, prijavu na zadatke, upravljanje profilom, komunikaciju putem poruka te korištenje drugih funkcionalnosti ovisno o korisničkoj ulozi.
+> Backend dio aplikacije nalazi se u zasebnom repozitoriju.
 Aplikacija podržava tri vrste korisnika:
 
 - volonter
